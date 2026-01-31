@@ -1,0 +1,28 @@
+[#Menu:GateWayOfTally]
+	Add		: Key Item	: aFTER : @@locIndentUtilities:  "Barcode Print"	: M : Alter	: MamthaTxt BarcodeLabel
+	
+
+
+[Menu:Mamta textiles BarcodePrint]
+	Title	: " Mamta textiles BarcodePrint"
+	Key Item	: Stock Item List		: S : Display	: StockItemAllList
+
+
+[#Menu:Company TopMenu]
+	Add			: Key Item	: "Configure Discount"	: D : Alter	: Mamtha Discount Range
+	
+
+
+[System:UDF]
+	MTBarcodeLabelList		: Aggregate	: 901 
+	MTBStkItemName			: String	: 902
+    MTBStkMRP           	: Number    : 903
+    MTBStkPurRate       	: Amount    : 904
+    MTBStkDiscount      	: Number    : 905
+    MTBStkAfterDisc     	: Amount    : 906
+    MTBStkLabels        	: Number    : 907
+	
+	
+[Include:barcode_cfg.txt]
+[Include:DiscountRange.txt]
+[Include:label_printing.txt]

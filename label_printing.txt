@@ -1,0 +1,67 @@
+
+[#Menu:GateWayOFTally]
+	Item	: Print		: Print	: MTLabelPrinting
+	
+[Report:MTLabelPrinting]
+	Form	: MTLabelPrinting
+	Collection	: MTBarcodeListVar
+	
+[Form:MTLabelPrinting]
+	Part	: MTLabelPrinting
+	Space Left	: 1.5 mm
+	
+[Part:MTLabelPrinting]
+	Part	: MTLabelPrintLeft, MTLabelPrintRight
+	
+
+[Part:MTLabelPrintLeft]
+	Line	: MTLabelPrintItmName,MTMrpPrintItem,MTAfterDiscount,MTVendorName, MTBarDispCode
+	Width	: 49 mm
+[Line:MTLabelPrintItmName]
+	Field	: MTLabelPrintItmName
+	Local	: Style	: Default			: Height	: 8
+	
+	
+[Line:MTMrpPrintItem]
+	Field	: MTMrpPrintItemField
+	
+	
+[Line:MTAfterDiscount]
+	Field	: MTAfterDiscountField
+	Local	: Style	: Default			: Height	: 8
+	
+
+[Line:MTVendorName]
+	Field	: MTVendorNameField
+	Local	: Style	: Default			: Height	: 8
+	
+
+[Field:MTLabelPrintItmName]
+	Width	: 48 mm
+	Set as	: $StkITemName;"Binny Plain C/P C/t"
+	Style:Normal Bold
+	Align	: Center
+	
+[Field	: MTMrpPrintItemField]
+	Set as :"HP:HIDKM     MRP:"+ $$String:$MRP
+	Style:Normal Bold
+	
+	
+[Field	: MTAfterDiscountField]
+	Set as: "After Dis : 800"
+	Style:Normal Bold
+[Field	: MTVendorNameField]
+	Set as:"3 Star Prints"
+	Style:Normal Bold
+	
+
+[Line:MTBarDispCode]
+	Field	: MTBarDispCode
+[Field:MTBarDispCode]
+	Width	: 48 mm
+	Align	: Center
+	Set as	: "34142"
+	
+[Part:MTLabelPrintRight]
+	Use		: MTLabelPrintLeft
+	Space Left: 2 mm

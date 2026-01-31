@@ -1,0 +1,88 @@
+;;==============================================================================
+;; 1. SYSTEM DEFINITIONS
+;;==============================================================================
+[System: UDF]
+    MTBPRangeColln : Aggregate : 1000
+    MTBPRangeFrom  : Amount    : 1001
+    MTBPRangeTo    : Amount    : 1002
+    MTBPRangeAmt   : Amount    : 1003
+
+;; You MUST define the collection for the repeater to function correctly
+;[Collection: MTBPRangeColln]
+;    Type     : MTBPRangeColln
+;    Child of : ##SVCurrentCompany
+
+;;==============================================================================
+;; 2. REPORT & FORM STRUCTURE
+;;==============================================================================
+[Report: Mamtha Discount Range]
+    Title   : "Discount Range Configuration"
+    Form    : Mamtha Discount Range
+    Object  : Company : ##SVCurrentCompany
+
+[Form: Mamtha Discount Range]
+    Part    : Form Subtitle, MTBP DiscHeader, MTBP DiscBody
+    Full Width : No
+;    Width   : 50% Screen
+    Local   : Field : Form Subtitle : Info : "Setup: Price Range wise Discount"
+	
+;;==============================================================================
+;; 3. HEADER SECTION
+;;==============================================================================
+[Part: MTBP DiscHeader]
+    Line    : MTBP DiscTitle
+    
+[Line: MTBP DiscTitle]
+    Fields  : MTBP HeadFrom, MTBP HeadTo, MTBP HeadAmt
+    Local   : Field : Default : Style : Small Bold
+    Local   : Field : Default : Align : Right
+    Local   : Field : MTBP HeadFrom : Info : "From"
+    Local   : Field : MTBP HeadTo   : Info : "Less Than"
+    Local   : Field : MTBP HeadAmt  : Info : "Fixed Discount"
+    Border  : Thin Top Bottom
+
+[Field: MTBP HeadFrom]
+    Use     : Name Field
+    Width   : 15
+[Field: MTBP HeadTo]
+    Use     : Name Field
+    Width   : 15
+[Field: MTBP HeadAmt]
+    Use     : Name Field
+    Width   : 15
+
+;;==============================================================================
+;; 4. BODY SECTION (The Repeater)
+;;==============================================================================
+[Part: MTBP DiscBody]
+    Line    : MTBP DiscLine
+    Repeat  : MTBP DiscLine : MTBPRangeColln
+    Scroll  : Vertical
+    Common Border : Yes
+    ;; This tells Tally when to stop creating new lines
+    Break On : $$IsEmpty:#MTBPRangeFrom AND $$IsEmpty:#MTBPRangeTo
+
+[Line: MTBP DiscLine]
+    Fields  : MTBP RangeFrom, MTBP RangeTo, MTBP RangeAmt
+	Local	: Style	: Default		: Height	: 9
+	
+[Field: MTBP RangeFrom]
+    Use     : Amount Field
+    Width   : 15
+    Storage : MTBPRangeFrom
+    Format  : "NoZero"
+    Align   : Right
+
+[Field: MTBP RangeTo]
+    Use     : Amount Field
+    Width   : 15
+    Storage : MTBPRangeTo
+    Format  : "NoZero"
+    Align   : Right
+
+[Field: MTBP RangeAmt]
+    Use     : Amount Field
+    Width   : 15
+    Storage : MTBPRangeAmt
+    Format  : "NoZero"
+    Align   : Right

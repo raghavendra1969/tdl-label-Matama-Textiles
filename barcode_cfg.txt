@@ -1,0 +1,179 @@
+[Report: MamthaTxt BarcodeLabel]
+	Title	: "Barcode Label Printing"
+    Form    : MamthaTxt BarcodeLabel
+    Object	: Company		: ##SVCurrentCompany
+	
+[Form: MamthaTxt BarcodeLabel]
+    Part    : Form Subtitle, MamthaTxt BarcodeLabel
+    Full Width		: No
+	Horizontal Alignment	: Left
+	Local	: Field	: Form Subtitle		: Info	: "Barcode Label Printing" 
+	On		: Form Accept	: Yes		: Form Accept
+	On		: Form Accept	: Yes		: Call	: MamthaTxt GenBarcode
+	
+[Part: MamthaTxt BarcodeLabel]
+    Line    : StockItemAllTitle, StockItemAllList
+    Repeat  : StockItemAllList : MTBarcodeLabelList; StockItemListColln
+	
+    Scroll  : Vertical
+	Common Border	: YES
+	Break On		: $$IsSysName:#MTBPStkName
+	Border	: Thin Bottom
+
+[Line: StockItemDiscountRange]
+    Fields : Medium Prompt, StockItemDiscountRange
+    Local  : Field : Medium Prompt : Info : "Enable Discount Range?"
+
+[Field: StockItemDiscountRange]
+    Use      : Logical Field
+    Storage  : ItemDiscountRange
+    Set as   : No
+    Style    : Normal Bold
+	
+
+
+
+
+
+
+
+[Line: StockItemAllTitle]
+    Use     : StockItemAllList
+    Local   : Field : Default : Style : Small Bold
+    Local   : Field : Default : Align : Center
+    Local   : Field : MTBPStkName  : Info	: "Item Name"
+    Local   : Field : StkMRP       : Set as : "MRP"
+    Local   : Field : StkPurRate   : Set as : "Pur Rate"
+    Local   : Field : StkDiscount  : Set as : "Disc "
+    Local   : Field : StkAfterDisc : Set as : "Net Rate"
+    Local   : Field : StkCostCode  : Set as : "Cost Code"
+    Local   : Field : StkLabels    : Info	: "Labels"
+	Local	: Field	: Default		: Skip	: YES
+	Local	: Field	: Default		: Delete	: Storage
+	Local	: Field	: Default		: Delete	: Set By Condition
+	Local	: Field	: Default		: Inactive	: No
+    Border  : Thin Top Bottom
+
+[Line: StockItemAllList]
+    Fields  : MTBP StkName, StkMRP, StkPurRate, StkDiscount, StkAfterDisc, StkCostCode, StkLabels
+	Local	: Field	: Default		: Border	: thin Left
+;; --- Field Definitions ---
+
+;[Field:MTBP StkName]
+[Field:MTBP StkName]
+    Use    : Name Field
+    Width  : 30
+;    Set as : $Name
+	Table	: MTBP StkName Table, End Of list
+	Show Table	: Always
+	Storage		: MTBStkItemName
+[Field: StkMRP]
+    Width  : 10
+;    Set as : $FullPrice ;; Pulls standard selling price/MRP
+    Align  : Right
+	Set as	: $$Table:MTBPStkName:$MRPRATE
+	Set Always	: YES
+	Inactive	: $$IsSysName:#MTBPStkName
+	Type		: Number
+	Storage		: MTBStkMRP
+[Field: StkPurRate]
+    Width  : 10
+;    Set as : $LastPurchaseCost ;; Standard Tally Method for Last Pur Rate
+    Align  : Right
+	Set as	: $$CurrentValue:$StandardCost:StockItem:#MTBPStkName
+	Set Always	: YES
+[Field: StkDiscount]
+    Width  : 10
+    Storage  : MTBPDiscount
+    Align  : Center
+	Set Always	: YES
+	Set By Condition : YES : $(Company,##SVCurrentCompany).MTBPRangeColln[1,@@MTDiscRangeCondt].MTBPRangeAmt
+		
+	
+;	StkMRP	: $$AsAmount:#StkMRP ;;;
+
+
+[System:Formula]
+	MTDiscRangeCondt : $$number:#StkMRP >= $$number:$MTBPRangeFrom AND $$number:#StkMRP<=$$number:$MTBPRangeTo
+	
+
+[Field: StkAfterDisc]
+    Width  : 10
+    ;; Calculation: Pur Rate - (Discount logic)
+;    Set as : $LastPurchaseCost 
+	Set as   : $StkMRP - ($StkMRP * #StkDiscount / 100)
+	Fixed	 : Yes
+    Align  : Right
+    Style  : Normal Bold
+
+[Field: StkCostCode]
+    Width  : 10
+    ;; Example logic: Converting price to a code (e.g., 100 -> ATN)
+;    Set as : $$String:$LastPurchaseCost
+    Align  : Center
+
+[Field: StkLabels]
+    Width  : 7
+    Set as : "1" ;; Defaulting to 1 label
+    Align  : Center
+	Storage: MTBStkLabels
+	Type	: Number
+
+
+;; --- Collection ---
+
+[Collection: MTBP StkName Table]
+	Title			: "List Of Stock Items"
+    Type  			: StockItem
+	Fetch			: MRPDETAILS.MRPRATEDETAILS.MRPRATE
+	Compute			: MRPRATE		: $MRPDETAILS[Last].MRPRATEDETAILS[Last].MRPRATE
+	Format			: $NAME, 30
+	Format			: $MRPRATE, 10
+	Full Height		: Yes
+	Align			: Right
+    Fetch		 	: Name, LastPurchaseCost, FullPrice
+	
+;;-----------------------------
+[Function:MamthaTxt GenBarcode]
+	Variable	: Cntr		: Number	: 0
+	Variable	: INcrKey	: Number	: 1
+	001 : List Delete	: MTBarcodeListVar
+	010 : Walk Collection	: MTBarcodeLabelList
+	020 : Log	: $MTBStkItemName + " -- " + $$String:$MTBStkLabels
+	021 : Set	: Cntr		: 0
+	022 : While	: ##Cntr < $MTBStkLabels
+	024 : Log	: ##Cntr
+	
+	100 : List Add	: MTBarcodeListVar	: ##INcrKey
+	110 : Set		: MTBarcodeListVar[##INcrKey].StkITemName 	: $MTBStkItemName
+	120 : Set		: MTBarcodeListVar[##INcrKey].MRP			: $MTBStkMRP
+
+
+	
+	025 : Increment	: Cntr  
+	026 : Increment	: INcrKey
+	050 : End While
+	
+	400 : End Walk
+	410 : Log	: "Total Barcode : " + $$String:@TotalLAbel
+	450 : Print	: MTLabelPrinting
+	
+	
+	Local Formula	: TotalLAbel		: $$ListCount:MTBarcodeListVar
+	
+	
+	
+[System:Variable]
+	List Variable	: MTBarcodeListVar
+	
+[Variable:MTBarcodeListVar]
+	Variable	: StkITemName		: String
+	Variable	: PartNo			: String
+	Variable	: MRP				: String
+	Variable	: PurcPrice			: String
+	Variable	: DiscVar			: Number
+	Variable	: NetRate			: String
+	Variable	: CustCode			: String
+	
+[Collection:MTBarcodeListVar]
+	Data Source	: Variable			: MTBarcodeListVar
